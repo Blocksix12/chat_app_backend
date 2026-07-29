@@ -74,6 +74,7 @@ class AuthService {
   Future<Map<String, dynamic>> register({
     required String username,
     required String email,
+    required String phone,
     required String password,
   }) async {
     //---------------------------------------------------------
@@ -100,7 +101,7 @@ class AuthService {
       id: userId,
       email: email,
       username: username,
-      phone: null,
+      phone: phone,
       password: hashedPassword,
       status: "ACTIVE",
       createdAt: DateTime.now(),

@@ -101,12 +101,16 @@ class AuthController {
 
       final username = body['username'] as String?;
       final email = body['email'] as String?;
+      final phone = body['phone'] as String?;
       final password = body['password'] as String?;
+
 
       if (username == null ||
           username.isEmpty ||
           email == null ||
           email.isEmpty ||
+          phone == null ||
+          phone.isEmpty ||
           password == null ||
           password.isEmpty) {
         return ResponseUtils.error(
@@ -118,6 +122,7 @@ class AuthController {
       final result = await _authService.register(
         username: username,
         email: email,
+        phone: phone,
         password: password,
       );
 
