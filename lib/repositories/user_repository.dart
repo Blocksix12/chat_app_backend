@@ -118,4 +118,36 @@ class UserRepository {
 
     return ProfileModel.fromMap(response);
   }
+    ///=========================================================
+  /// GET USER BY PHONE
+  ///=========================================================
+
+  Future<UserModel?> getUserByPhone(String phone) async {
+    final response = await _client
+        .from(_userTable)
+        .select()
+        .eq('phone', phone)
+        .maybeSingle();
+
+    if (response == null) return null;
+
+    return UserModel.fromMap(response);
+  }
+
+  ///=========================================================
+  /// SEARCH USERS
+  ///=========================================================
+
+  Future<List<UserModel>> searchUsers(String keyword) async {
+    final response = await _client
+        .from(_userTable)
+        .select()
+        .or(
+          'username.ilike.%$keyword%,email.ilike.%$keyword%',
+        );
+
+    return (response as List)
+        .map((e) => UserModel.fromMap(e))
+        .toList();
+  }
 }

@@ -9,11 +9,11 @@ class ProfileRepository {
   ProfileRepository({SupabaseClient? client})
       : _client = client ?? DatabaseConfig.client;
 
-  static const String _table = "profiles";
+  static const String _tableName = "profiles";
 
   Future<ProfileModel> createProfile(ProfileModel profile) async {
     final response = await _client
-        .from(_table)
+        .from(_tableName)
         .insert(profile.toMap())
         .select()
         .single();
@@ -21,9 +21,9 @@ class ProfileRepository {
     return ProfileModel.fromMap(response);
   }
 
-  Future<ProfileModel?> getProfile(String userId) async {
+  Future<ProfileModel?> getProfileByUserId(String userId) async {
     final response = await _client
-        .from(_table)
+        .from(_tableName)
         .select()
         .eq("user_id", userId)
         .maybeSingle();
@@ -32,4 +32,49 @@ class ProfileRepository {
 
     return ProfileModel.fromMap(response);
   }
+
+  Future<ProfileModel> updateProfile(ProfileModel profile) async {
+    final response = await _client
+        .from(_tableName)
+        .update({
+          "avatar_url": profile.avatarUrl,
+          "full_name": profile.fullName,
+          "bio": profile.bio,
+          "address": profile.address,
+          "updated_at": DateTime.now().toIso8601String(),
+        })
+        .eq("user_id", profile.userId)
+        .select()
+        .single();
+
+    return ProfileModel.fromMap(response);
+  }
+
+  Future<List<ProfileModel>> searchProfiles(String keyword) async {
+    final response = await _client
+        .from(_tableName)
+        .select()
+        .or("full_name.ilike.%$keyword%,bio.ilike.%$keyword%");
+
+    return (response as List)
+        .map((e) => ProfileModel.fromMap(e))
+        .toList();
+  }
+  ///==========================================================
+/// GET PROFILES BY USER IDS
+///==========================================================
+Future<List<ProfileModel>> getProfilesByUserIds(
+    List<String> userIds) async {
+
+  if (userIds.isEmpty) return [];
+
+  final response = await _client
+      .from(_tableName)
+      .select()
+      .inFilter("user_id", userIds);
+
+  return (response as List)
+      .map((e) => ProfileModel.fromMap(e))
+      .toList();
+}
 }

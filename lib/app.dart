@@ -8,6 +8,7 @@ import 'routes/auth_routes.dart';
 import 'routes/message_routes.dart';
 import 'routes/room_routes.dart';
 import 'services/websocket_service.dart';
+import 'routes/user_routes.dart';
 
 Handler createAppHandler() {
   final router = Router();
@@ -27,6 +28,9 @@ Handler createAppHandler() {
           'send_message': 'POST /api/messages',
           'get_messages': 'GET /api/messages/room/<roomId>',
           'websocket': 'WS /ws?token=<token>',
+          'user_profile': 'GET /api/users/profile',
+          'update_profile': 'PUT /api/users/profile',
+          'search_users': 'GET /api/users?keyword=',  
         }
       }),
       headers: {'content-type': 'application/json; charset=utf-8'},
@@ -42,6 +46,9 @@ Handler createAppHandler() {
 
   router.mount('/api/messages/', MessageRoutes().handler);
   router.mount('/api/messages', MessageRoutes().handler);
+
+  router.mount('/api/users/', UserRoutes().handler);
+  router.mount('/api/users', UserRoutes().handler);
 
   // WebSocket Route: ws://<host>:<port>/ws?token=<jwt_token>
   router.get('/ws', (Request request) {
