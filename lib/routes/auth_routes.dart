@@ -13,6 +13,7 @@ class AuthRoutes {
 
     router.post('/token', (Request req) => _controller.generateToken(req));
     router.post('/login', (Request req) => _controller.login(req));
+    router.post('/register', (Request req) => _controller.register(req));
 
     return router;
   }
