@@ -41,6 +41,16 @@ class UserRepository {
     return UserModel.fromMap(response);
   }
 
+  Future<List<UserModel>> getUsersByIds(List<String> ids) async {
+    if (ids.isEmpty) return [];
+    final response = await _client
+        .from(_tableName)
+        .select()
+        .inFilter('id', ids);
+
+    return (response as List).map((e) => UserModel.fromMap(e)).toList();
+  }
+
   Future<UserModel> updateUser(UserModel user) async {
     final response = await _client
         .from(_tableName)

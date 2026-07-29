@@ -58,6 +58,19 @@ class MessageRepository {
     return MessageModel.fromMap(response);
   }
 
+  Future<MessageModel?> getLastMessageByRoomId(String roomId) async {
+    final response = await _client
+        .from(_tableName)
+        .select()
+        .eq('room_id', roomId)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    if (response == null) return null;
+    return MessageModel.fromMap(response);
+  }
+
   Future<void> deleteMessage(String id) async {
     await _client.from(_tableName).delete().eq('id', id);
   }
