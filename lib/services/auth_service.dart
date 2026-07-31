@@ -63,7 +63,7 @@ class AuthService {
     );
 
     return {
-      "user": user.toPublicJson(),
+      // "user": user.toPublicJson(),
       "token": token,
     };
   }
@@ -135,7 +135,7 @@ class AuthService {
     );
 
     return {
-      "user": createdUser.toPublicJson(),
+      // "user": createdUser.toPublicJson(),
       "token": token,
     };
   }
