@@ -40,6 +40,16 @@ class WebSocketService {
       (message) {
         // Handle incoming client socket messages if needed
         print('Received socket message from $userId: $message');
+        try {
+          final map = jsonDecode(message.toString()) as Map<String, dynamic>;
+          if (map['action'] == 'typing') {
+            final roomId = (map['room_id'] ?? map['roomId'])?.toString();
+            final isTyping = map['is_typing'] ?? map['isTyping'] ?? false;
+            if (roomId != null) {
+              notifyTyping(userId, roomId, isTyping as bool);
+            }
+          }
+        } catch (_) {}
       },
       onDone: () {
         _removeConnection(userId, channel);
@@ -97,5 +107,24 @@ class WebSocketService {
 
   bool isUserOnline(String userId) {
     return _userSockets.containsKey(userId) && (_userSockets[userId]?.isNotEmpty ?? false);
+  }
+
+  void notifyTyping(String senderId, String roomId, bool isTyping) {
+    final payload = jsonEncode({
+      'event': 'typing',
+      'data': {
+        'roomId': roomId,
+        'userId': senderId,
+        'isTyping': isTyping,
+      },
+    });
+
+    _userSockets.forEach((uId, sockets) {
+      if (uId != senderId) {
+        for (final socket in sockets) {
+          socket.sink.add(payload);
+        }
+      }
+    });
   }
 }
