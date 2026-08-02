@@ -38,6 +38,9 @@ class WebSocketService {
       'data': {'userId': userId},
     }));
 
+    // Broadcast that this user is online
+    notifyUserStatusChanged(userId, true);
+
     channel.stream.listen(
       (message) {
         print('Received socket message from $userId: $message');
@@ -84,8 +87,28 @@ class WebSocketService {
     _userSockets[userId]?.remove(channel);
     if (_userSockets[userId]?.isEmpty ?? false) {
       _userSockets.remove(userId);
+      // Broadcast that this user went offline
+      notifyUserStatusChanged(userId, false);
     }
     print('WebSocket disconnected for user: $userId');
+  }
+
+  void notifyUserStatusChanged(String userId, bool isOnline) {
+    final payload = jsonEncode({
+      'event': 'user_status',
+      'data': {
+        'userId': userId,
+        'isOnline': isOnline,
+      }
+    });
+
+    _userSockets.forEach((uId, sockets) {
+      if (uId != userId) {
+        for (final socket in sockets) {
+          socket.sink.add(payload);
+        }
+      }
+    });
   }
 
   /// Broadcasts a real-time event when a new room is created (e.g. friend added)

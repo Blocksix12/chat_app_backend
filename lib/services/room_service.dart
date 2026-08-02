@@ -35,7 +35,11 @@ class RoomService {
     final lastMessage = await _messageRepository.getLastMessageByRoomId(room.id);
 
     final roomMap = room.toMap();
-    roomMap['members'] = users.map((u) => u.toPublicJson()).toList();
+    roomMap['members'] = users.map((u) {
+      final json = u.toPublicJson();
+      json['is_online'] = _webSocketService.isUserOnline(u.id);
+      return json;
+    }).toList();
     roomMap['last_message'] = lastMessage?.toMap();
 
     return roomMap;
