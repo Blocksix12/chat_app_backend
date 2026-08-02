@@ -21,14 +21,16 @@ class WebSocketService {
       return;
     }
 
-    final userId = (payload['id'] ?? payload['userId'] ?? payload['sub']) as String?;
+    final userId =
+        (payload['id'] ?? payload['userId'] ?? payload['sub']) as String?;
     if (userId == null) {
       channel.sink.close();
       return;
     }
 
     _userSockets.putIfAbsent(userId, () => []).add(channel);
-    print('WebSocket connected for user: $userId (Active sockets: ${_userSockets[userId]?.length})');
+    print(
+        'WebSocket connected for user: $userId (Active sockets: ${_userSockets[userId]?.length})');
 
     // Send connection established confirmation
     channel.sink.add(jsonEncode({
@@ -38,7 +40,6 @@ class WebSocketService {
 
     channel.stream.listen(
       (message) {
-        // Handle incoming client socket messages if needed
         print('Received socket message from $userId: $message');
         try {
           final map = jsonDecode(message.toString()) as Map<String, dynamic>;
@@ -60,55 +61,6 @@ class WebSocketService {
     );
   }
 
-  void _removeConnection(String userId, WebSocketChannel channel) {
-    _userSockets[userId]?.remove(channel);
-    if (_userSockets[userId]?.isEmpty ?? false) {
-      _userSockets.remove(userId);
-    }
-    print('WebSocket disconnected for user: $userId');
-  }
-
-  /// Broadcasts a real-time event when a new room is created (e.g. friend added)
-  /// so both users instantly get added to the room without querying the database!
-  void notifyRoomCreated(List<String> targetUserIds, Map<String, dynamic> roomData) {
-    final payload = jsonEncode({
-      'event': 'room_created',
-      'data': roomData,
-    });
-
-    for (final userId in targetUserIds) {
-      final sockets = _userSockets[userId];
-      if (sockets != null && sockets.isNotEmpty) {
-        for (final socket in sockets) {
-          socket.sink.add(payload);
-        }
-        print('Pushed room_created event to online user: $userId');
-      }
-    }
-  }
-
-  /// Broadcasts a real-time message event to room members
-  void notifyNewMessage(List<String> memberUserIds, Map<String, dynamic> messageData) {
-    final payload = jsonEncode({
-      'event': 'new_message',
-      'data': messageData,
-    });
-
-    for (final userId in memberUserIds) {
-      final sockets = _userSockets[userId];
-      if (sockets != null && sockets.isNotEmpty) {
-        for (final socket in sockets) {
-          socket.sink.add(payload);
-        }
-        print('Pushed new_message event to online user: $userId');
-      }
-    }
-  }
-
-  bool isUserOnline(String userId) {
-    return _userSockets.containsKey(userId) && (_userSockets[userId]?.isNotEmpty ?? false);
-  }
-
   void notifyTyping(String senderId, String roomId, bool isTyping) {
     final payload = jsonEncode({
       'event': 'typing',
@@ -126,5 +78,57 @@ class WebSocketService {
         }
       }
     });
+  }
+
+  void _removeConnection(String userId, WebSocketChannel channel) {
+    _userSockets[userId]?.remove(channel);
+    if (_userSockets[userId]?.isEmpty ?? false) {
+      _userSockets.remove(userId);
+    }
+    print('WebSocket disconnected for user: $userId');
+  }
+
+  /// Broadcasts a real-time event when a new room is created (e.g. friend added)
+  /// so both users instantly get added to the room without querying the database!
+  void notifyRoomCreated(
+      List<String> targetUserIds, Map<String, dynamic> roomData) {
+    final payload = jsonEncode({
+      'event': 'room_created',
+      'data': roomData,
+    });
+
+    for (final userId in targetUserIds) {
+      final sockets = _userSockets[userId];
+      if (sockets != null && sockets.isNotEmpty) {
+        for (final socket in sockets) {
+          socket.sink.add(payload);
+        }
+        print('Pushed room_created event to online user: $userId');
+      }
+    }
+  }
+
+  /// Broadcasts a real-time message event to room members
+  void notifyNewMessage(
+      List<String> memberUserIds, Map<String, dynamic> messageData) {
+    final payload = jsonEncode({
+      'event': 'new_message',
+      'data': messageData,
+    });
+
+    for (final userId in memberUserIds) {
+      final sockets = _userSockets[userId];
+      if (sockets != null && sockets.isNotEmpty) {
+        for (final socket in sockets) {
+          socket.sink.add(payload);
+        }
+        print('Pushed new_message event to online user: $userId');
+      }
+    }
+  }
+
+  bool isUserOnline(String userId) {
+    return _userSockets.containsKey(userId) &&
+        (_userSockets[userId]?.isNotEmpty ?? false);
   }
 }

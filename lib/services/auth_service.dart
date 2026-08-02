@@ -84,9 +84,9 @@ class AuthService {
 
     if (existed != null) {
       throw AppException(
-         "Email already exists",
-           statusCode: 400,
-);
+        "Email already exists",
+        statusCode: 400,
+      );
     }
 
     //---------------------------------------------------------
@@ -94,8 +94,7 @@ class AuthService {
     //---------------------------------------------------------
     final userId = const Uuid().v4();
 
-    final hashedPassword =
-        BcryptHelper.hashPassword(password);
+    final hashedPassword = BcryptHelper.hashPassword(password);
 
     final user = UserModel(
       id: userId,
@@ -107,8 +106,7 @@ class AuthService {
       createdAt: DateTime.now(),
     );
 
-    final createdUser =
-        await _userRepository.createUser(user);
+    final createdUser = await _userRepository.createUser(user);
 
     //---------------------------------------------------------
     // Create Profile
